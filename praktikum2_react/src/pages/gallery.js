@@ -46,7 +46,7 @@ export default class Gallery extends React.Component {
             search: "",
             filterBuku: [],
             user: ""
-        }
+        } 
         this.state.filterBuku = this.state.buku
     }
 

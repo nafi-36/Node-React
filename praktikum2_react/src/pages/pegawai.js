@@ -12,7 +12,8 @@ export default class Pegawai extends React.Component {
             nip: "",
             nama: "",
             alamat: "",
-            action: ""
+            action: "",
+            keyword: ""
         }
     }
 
@@ -25,6 +26,51 @@ export default class Pegawai extends React.Component {
             alamat: "",
             action: "insert"
         })
+    }
+
+    handleEdit = (selectedItem) => {
+        // console.log('edit')
+        // console.log(selectedItem)
+        this.setState({
+            isModalOpen: true,
+            nip: selectedItem.nip,
+            nama: selectedItem.nama,
+            alamat: selectedItem.alamat,
+            action: "update"
+        })
+    }
+
+    handleDelete = (nip) => {
+        let url = "http://localhost:4000/pegawai/" + nip
+        if (window.confirm("Apakah anda yakin ingin menghapus data ini ?")) {
+            axios.delete(url)
+            .then(res => {
+                console.log(res.data.message)
+                this.getPegawai() // mereload data pegawai 
+            })
+            .catch(err => {
+                console.log(err.message)
+            })
+        }
+    }
+
+    handleSearch = (e) => {
+        let url = "http://localhost:4000/pegawai"
+        if (e.keyCode === 13) {
+            // console.log("search")
+            let data = {
+                keyword: this.state.keyword
+            }
+            axios.post(url, data)
+            .then(res => {
+                this.setState({
+                    pegawai: res.data.pegawai
+                })
+            })
+            .catch(err => {
+                console.log(err.message)
+            })
+        }
     }
 
     handleChange = (e) => {
@@ -46,6 +92,8 @@ export default class Pegawai extends React.Component {
         let url = ""
         if (this.state.action === "insert") {
             url = "http://localhost:4000/pegawai/save"
+        } else if (this.state.action === "update") {
+            url = "http://localhost:4000/pegawai/update"
         }
 
         // panggil api backend
@@ -93,12 +141,19 @@ export default class Pegawai extends React.Component {
                         <h3>Data Pegawai</h3>
                     </div>
                     <div className='card-body'>
-                        <button className='btn btn-success mb-3' onClick={() => this.handleAdd()}>Tambah Data</button>
+                        <input className="form-control mb-3" type="text" name="keyword" 
+                            value={this.state.keyword} 
+                            onChange={this.handleChange} 
+                            onKeyUp={this.handleSearch} 
+                            placeholder="Masukkan nip / nama / alamat"
+                        />
+                        {/* <button className='btn btn-success mb-3' onClick={() => this.handleAdd()}>Tambah Data</button> */}
                         <table className='table'>
                             <thead>
                                 <th>NIP</th>
                                 <th>Nama</th>
                                 <th>Alamat</th>
+                                <th>Action</th>
                             </thead>
                             <tbody>
                                 {this.state.pegawai.map((item, index) => {
@@ -107,14 +162,19 @@ export default class Pegawai extends React.Component {
                                             <td>{item.nip}</td>
                                             <td>{item.nama}</td>
                                             <td>{item.alamat}</td>
+                                            <td>
+                                                <button className="btn btn-primary m-1" onClick={() => this.handleEdit(item)}>Edit</button>
+                                                <button className="btn btn-danger m-1" onClick={() => this.handleDelete(item.nip)}>Delete</button>
+                                            </td>
                                         </tr>
                                     )
                                 })}
                             </tbody>
                         </table>
-                        {/* <button className='btn btn-primary' onClick={() => this.handleAdd()}>Tambah Data</button> */}
+                        <button className='btn btn-success' onClick={() => this.handleAdd()}>Tambah Data</button>
                     </div>
                 </div>
+
                 <Modal show={this.state.isModalOpen} onHide={this.handleClose}>
                     <Modal.Header closeButton>
                         <Modal.Title>Form Pegawai</Modal.Title>
